@@ -58,6 +58,17 @@ module ``about the stock example`` =
     // tests for yourself along the way. You can also try 
     // using the F# Interactive window to check your progress.
 
+    let splitCommas (x:string) =
+        x.Split([|','|])
+
+    
+    let average lst =
+        lst |>
+        List.Sum |>
+        (* )
+
+
+
     [<Koan>]
     let YouGotTheAnswerCorrect() =
         let result =  __
