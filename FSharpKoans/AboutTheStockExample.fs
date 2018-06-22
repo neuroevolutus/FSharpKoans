@@ -61,16 +61,75 @@ module ``about the stock example`` =
     let splitCommas (x:string) =
         x.Split([|','|])
 
-    
+
+    let appTwoFuncsAndCombine lst f g h =
+        h (f lst) (g lst)
+
     let average lst =
+        appTwoFuncsAndCombine lst Seq.sum (Seq.length >> float) (/)
+
+    let flip f x y = f y x
+
+    let variance lst =
+        let avg = average lst
         lst |>
-        List.Sum |>
-        (* )
+        Seq.sumBy ((-) avg >> ( ** ) 2.0) |>
+        ((/) ((Seq.length >> float >> (-) 1.0) lst))
 
+    let variance' lst = 
+        abs (Seq.head lst - Seq.last lst)
 
+    let flip' f y z x = f x y z
+
+    let findMaxValueByThenGetKey lst score value =
+        let rec findMaxValueByThenGetKey' lst' scoreFunc valueFunc maxScore currValue =
+            match lst' with
+            | [] -> currValue
+            | __ -> 
+                let newScore = score (List.head lst')
+                if newScore > maxScore then
+                    findMaxValueByThenGetKey' 
+                        (List.tail lst') 
+                        scoreFunc 
+                        valueFunc 
+                        newScore 
+                        (valueFunc (List.head lst'))
+                else 
+                    findMaxValueByThenGetKey' 
+                        (List.tail lst') 
+                        scoreFunc 
+                        valueFunc 
+                        maxScore 
+                        currValue 
+
+        findMaxValueByThenGetKey' 
+            (List.tail lst) 
+            score 
+            value 
+            (score (List.head lst)) 
+            (value (List.head lst))
+
+    let convertToFloatsAndFindVariance lst =
+        lst |>
+        Seq.map (fun x -> System.Double.Parse(x, System.Globalization.CultureInfo.InvariantCulture)) |>
+        variance
+    let convertToFloatsAndFindVariance' lst =
+        lst |>
+        Seq.map (fun x -> System.Double.Parse(x, System.Globalization.CultureInfo.InvariantCulture)) |>
+        variance'
 
     [<Koan>]
     let YouGotTheAnswerCorrect() =
-        let result =  __
-        
+        let result =
+            stockData |> 
+            List.tail |> 
+            List.map splitCommas |>
+            List.map (Seq.take 5) |>
+            (flip' findMaxValueByThenGetKey) (Seq.skip 1 >> convertToFloatsAndFindVariance') Seq.head
+        (** 
+            (flip' findValueMaxByAndGetKey) 
+                (List.skip 1 >> convertToFloatsAndFindVariance)
+                (List.head)
+                **)
+
         AssertEquality "2012-03-13" result
